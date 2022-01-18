@@ -92,6 +92,7 @@ export default {
 <style>
 input, label {
   font-size: 45px;
+  max-width: 80%;
 }
 .possible-word {
     font-size: 35px;
