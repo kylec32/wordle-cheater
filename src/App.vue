@@ -1,7 +1,8 @@
 <template>
   <div id="app">
-    <h1>Wordle Cheater</h1>
-    <!-- <HelloWorld/> -->
+    <div class="page-title">Wordle Cheater</div>
+    <br/>
+    <br/>
     <OptionProvider/>
   </div>
 </template>
@@ -26,6 +27,15 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 20px;
+  width: 100%;
+}
+.page-title {
+  font-size:55px;
+  border-bottom: 1px black;
+  border-bottom-style: solid;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>
