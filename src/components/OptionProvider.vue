@@ -56,7 +56,7 @@ export default {
       if (this.current.length === 0) {
         return
       }
-      let regularExpressionString = this.current.replace('?', '.')
+      let regularExpressionString = this.current.toLowerCase().replace('?', '.')
       for (let i = 5 - regularExpressionString.length; i > 0; i--) {
         regularExpressionString += '.'
       }
@@ -64,8 +64,8 @@ export default {
       console.log(regularExpression)
       this.possibleWords = possibleAnswers.filter((value) => {
         if (regularExpression.test(value)) {
-          if (this.includesCharacters(this.knownLetters, value)) {
-            return this.notIncludedLetters.length === 0 || !this.includesCharacters(this.notIncludedLetters, value)
+          if (this.includesCharacters(this.knownLetters.toLowerCase(), value)) {
+            return this.notIncludedLetters.length === 0 || !this.includesCharacters(this.notIncludedLetters.toLowerCase(), value)
           }
         }
         return false
