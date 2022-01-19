@@ -1,8 +1,57 @@
-const wordlist = require()
-
 <template>
   <div>
-    <label for="current-status">Current Known (Use ? for unknown):</label>
+
+    <label for="current-status">Current Known (Use ? for unknown):    <svg xmlns="http://www.w3.org/2000/svg" v-show="isLoading" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;" width="40px" height="40px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+<g transform="rotate(0 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.9166666666666666s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(30 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.8333333333333334s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(60 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.75s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(90 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.6666666666666666s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(120 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.5833333333333334s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(150 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.5s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(180 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.4166666666666667s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(210 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.3333333333333333s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(240 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.25s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(270 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.16666666666666666s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(300 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.08333333333333333s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(330 50 50)">
+  <rect x="47" y="24" rx="3" ry="6" width="6" height="12" fill="#000000">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="0s" repeatCount="indefinite"></animate>
+  </rect>
+</g>
+</svg></label>
     <br/>
     <input id="current-status" class="current-box" v-model="current" maxlength="5">
     <br/>
@@ -37,21 +86,28 @@ export default {
       current: '',
       knownLetters: '',
       notIncludedLetters: '',
-      possibleWords: []
+      possibleWords: [],
+      isLoading: false
     }
   },
   watch: {
     knownLetters: function () {
-      this.processOptions()
+      this.runWithLoader(() => this.processOptions())
     },
     current: function () {
-      this.processOptions()
+      this.runWithLoader(() => this.processOptions())
     },
     notIncludedLetters: function () {
-      this.processOptions()
+      this.runWithLoader(() => this.processOptions())
     }
   },
   methods: {
+    runWithLoader: function (callback) {
+      this.isLoading = true
+      this.possibleWords = []
+      callback()
+      this.isLoading = false
+    },
     processOptions: function () {
       if (this.current.length === 0) {
         return
@@ -61,11 +117,10 @@ export default {
         regularExpressionString += '.'
       }
       let regularExpression = new RegExp(regularExpressionString)
-      console.log(regularExpression)
       this.possibleWords = possibleAnswers.filter((value) => {
         if (regularExpression.test(value)) {
           if (this.includesCharacters(this.knownLetters.toLowerCase(), value)) {
-            return this.notIncludedLetters.length === 0 || !this.includesCharacters(this.notIncludedLetters.toLowerCase(), value)
+            return this.notIncludedLetters.length === 0 || this.doNotIncludesCharacters(this.notIncludedLetters.toLowerCase(), value)
           }
         }
         return false
@@ -76,9 +131,19 @@ export default {
       let tempNeededCharacters = charactersToInclude.split('')
       let returnValue = true
       tempNeededCharacters.forEach((character) => {
-        console.log(character)
         if (targetValue.indexOf(character) < 0) {
-          console.log('false')
+          returnValue = false
+        }
+      })
+
+      return returnValue
+    },
+    doNotIncludesCharacters: function (charactersToNotInclude, targetValue) {
+      // unique here would be nice
+      let tempNeededCharacters = charactersToNotInclude.split('')
+      let returnValue = true
+      tempNeededCharacters.forEach((character) => {
+        if (targetValue.indexOf(character) >= 0) {
           returnValue = false
         }
       })
@@ -91,7 +156,7 @@ export default {
 
 <style>
 input, label {
-  font-size: 45px;
+  font-size: 30px;
   max-width: 80%;
 }
 .possible-word {
