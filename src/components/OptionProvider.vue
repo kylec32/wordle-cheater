@@ -66,9 +66,16 @@
     <input id="not-included-letters" class="not-included-letters" v-model="notIncludedLetters">
     <br/>
     <hr/>
-    <br/>
     <div class="possible-words">
+        <h2>Possible Answers</h2><br/>
         <div v-for="(word, index) in possibleWords" :key="index" class="possible-word">
+            {{ word }}
+        </div>
+    </div>
+    <hr/>
+    <div class="possible-words">
+        <h2>Possible Guesses</h2><br/>
+        <div v-for="(word, index) in goodLetterGuesses" :key="index" class="possible-word">
             {{ word }}
         </div>
     </div>
@@ -77,6 +84,7 @@
 
 <script>
 import possibleAnswers from './possible-answers.json'
+import possibleWrongWords from './possible-words.json'
 
 export default {
   name: 'HelloWorld',
@@ -87,7 +95,9 @@ export default {
       knownLetters: '',
       notIncludedLetters: '',
       possibleWords: [],
-      isLoading: false
+      isLoading: false,
+      possibleGuesses: [],
+      goodLetterGuesses: []
     }
   },
   watch: {
@@ -106,6 +116,7 @@ export default {
       this.isLoading = true
       this.possibleWords = []
       callback()
+      this.calculateGoodLetterWords()
       this.isLoading = false
     },
     processOptions: function () {
@@ -149,7 +160,62 @@ export default {
       })
 
       return returnValue
+    },
+    calculateGoodLetterWords: function () {
+      let wordsWithoutCharactersWeKnow = possibleAnswers.filter((value) => {
+        return this.doNotIncludesCharacters(this.notIncludedLetters.toLowerCase(), value) &&
+            this.doNotIncludesCharacters(this.knownLetters, value) &&
+            this.doNotIncludesCharacters(this.current, value)
+      })
+      let guessesWithoutCharactersWeKnow = this.possibleGuesses.filter((value) => {
+        return this.doNotIncludesCharacters(this.notIncludedLetters.toLowerCase(), value) &&
+            this.doNotIncludesCharacters(this.knownLetters, value) &&
+            this.doNotIncludesCharacters(this.current, value)
+      })
+
+      let characterMap = {}
+      wordsWithoutCharactersWeKnow.forEach((value) => {
+        value.split('').forEach((character) => {
+          characterMap[character] = (characterMap[character] | 0) + 1
+        })
+      })
+      let characterMapArray = []
+      for (const character in characterMap) {
+        characterMapArray.push({character: character, value: characterMap[character]})
+      }
+      let sortedCharacterMapArray = characterMapArray.sort((a, b) => {
+        return b.value - a.value
+      })
+
+      let currentScore = 26
+      let scoredCharacterMap = {}
+      for (let index in sortedCharacterMapArray) {
+        scoredCharacterMap[sortedCharacterMapArray[index].character] = currentScore
+        currentScore--
+      }
+
+      let scoredWordList = guessesWithoutCharactersWeKnow.map((value) => {
+        let score = 0
+        let seenLetters = ''
+        value.split('').forEach((character) => {
+          if (seenLetters.indexOf(character) < 0) {
+            seenLetters += character
+            score += scoredCharacterMap[character]
+          }
+        })
+        return {word: value, score: score}
+      })
+      let orderedScoredWordList = scoredWordList.sort((a, b) => {
+        return b.score - a.score
+      }).map((value) => value.word)
+        .slice(0, 10)
+      console.log(orderedScoredWordList)
+      this.goodLetterGuesses = orderedScoredWordList
     }
+  },
+  created: function () {
+    this.possibleGuesses.push(...possibleWrongWords)
+    this.possibleGuesses.push(...possibleAnswers)
   }
 }
 </script>
