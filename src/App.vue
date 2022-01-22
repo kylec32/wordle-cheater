@@ -8,13 +8,11 @@
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
 import OptionProvider from './components/OptionProvider.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld,
     OptionProvider
   }
 }

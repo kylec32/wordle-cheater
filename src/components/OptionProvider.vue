@@ -123,10 +123,13 @@ export default {
       if (this.current.length === 0) {
         return
       }
-      let regularExpressionString = this.current.toLowerCase().replace('?', '.')
+      this.current.toLowerCase().replace()
+      let regularExpressionString = this.current.toLowerCase().replaceAll('?', '.')
+      console.log(regularExpressionString)
       for (let i = 5 - regularExpressionString.length; i > 0; i--) {
         regularExpressionString += '.'
       }
+      console.log(regularExpressionString)
       let regularExpression = new RegExp(regularExpressionString)
       this.possibleWords = possibleAnswers.filter((value) => {
         if (regularExpression.test(value)) {
@@ -138,7 +141,6 @@ export default {
       })
     },
     includesCharacters: function (charactersToInclude, targetValue) {
-      // unique here would be nice
       let tempNeededCharacters = charactersToInclude.split('')
       let returnValue = true
       tempNeededCharacters.forEach((character) => {
@@ -150,7 +152,6 @@ export default {
       return returnValue
     },
     doNotIncludesCharacters: function (charactersToNotInclude, targetValue) {
-      // unique here would be nice
       let tempNeededCharacters = charactersToNotInclude.split('')
       let returnValue = true
       tempNeededCharacters.forEach((character) => {
@@ -162,23 +163,18 @@ export default {
       return returnValue
     },
     calculateGoodLetterWords: function () {
-      let wordsWithoutCharactersWeKnow = possibleAnswers.filter((value) => {
-        return this.doNotIncludesCharacters(this.notIncludedLetters.toLowerCase(), value) &&
-            this.doNotIncludesCharacters(this.knownLetters, value) &&
-            this.doNotIncludesCharacters(this.current, value)
-      })
-      let guessesWithoutCharactersWeKnow = this.possibleGuesses.filter((value) => {
-        return this.doNotIncludesCharacters(this.notIncludedLetters.toLowerCase(), value) &&
-            this.doNotIncludesCharacters(this.knownLetters, value) &&
-            this.doNotIncludesCharacters(this.current, value)
-      })
+      // remove words from the available answer words that include letters we know about.
+      let wordsWithoutCharactersWeKnow = this.filterOutWordsWithKnownAndUnknownLetters(possibleAnswers)
 
+      // Gather a count of each character in available answer words
       let characterMap = {}
       wordsWithoutCharactersWeKnow.forEach((value) => {
         value.split('').forEach((character) => {
           characterMap[character] = (characterMap[character] | 0) + 1
         })
       })
+
+      // Sort the characters in order of use.
       let characterMapArray = []
       for (const character in characterMap) {
         characterMapArray.push({character: character, value: characterMap[character]})
@@ -187,6 +183,7 @@ export default {
         return b.value - a.value
       })
 
+      // Assign score to each character based on how many times it appears in the available word list
       let currentScore = 26
       let scoredCharacterMap = {}
       for (let index in sortedCharacterMapArray) {
@@ -194,10 +191,15 @@ export default {
         currentScore--
       }
 
+      // Remove words from possible guess list that includes letters we know about.
+      let guessesWithoutCharactersWeKnow = this.filterOutWordsWithKnownAndUnknownLetters(this.possibleGuesses)
+
+      // Score each available word based on its character usage.
       let scoredWordList = guessesWithoutCharactersWeKnow.map((value) => {
         let score = 0
         let seenLetters = ''
         value.split('').forEach((character) => {
+          // Don't double count scores for duplicate letters.
           if (seenLetters.indexOf(character) < 0) {
             seenLetters += character
             score += scoredCharacterMap[character]
@@ -205,12 +207,21 @@ export default {
         })
         return {word: value, score: score}
       })
+
+      // Order words by score and return the top 10.
       let orderedScoredWordList = scoredWordList.sort((a, b) => {
         return b.score - a.score
       }).map((value) => value.word)
         .slice(0, 10)
-      console.log(orderedScoredWordList)
+
       this.goodLetterGuesses = orderedScoredWordList
+    },
+    filterOutWordsWithKnownAndUnknownLetters: function (words) {
+      return words.filter((value) => {
+        return this.doNotIncludesCharacters(this.notIncludedLetters.toLowerCase(), value) &&
+            this.doNotIncludesCharacters(this.knownLetters, value) &&
+            this.doNotIncludesCharacters(this.current, value)
+      })
     }
   },
   created: function () {
