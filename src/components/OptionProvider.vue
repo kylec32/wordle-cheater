@@ -128,7 +128,7 @@ export default {
     },
     processOptions: function () {
       this.tooManyGuesses = false
-      let regularExpressionString = this.current.toLowerCase().replaceAll('?', '.')
+      let regularExpressionString = '^' + this.current.toLowerCase().replaceAll('?', '.')
 
       regularExpressionString += '.*'
 
