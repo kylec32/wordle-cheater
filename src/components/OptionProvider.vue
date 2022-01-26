@@ -109,12 +109,15 @@ export default {
   },
   watch: {
     knownLetters: function () {
+      this.track('character-input', 'known')
       this.runWithLoader(() => this.processOptions())
     },
     current: function () {
+      this.track('character-input', 'current')
       this.runWithLoader(() => this.processOptions())
     },
     notIncludedLetters: function () {
+      this.track('character-input', 'not-included')
       this.runWithLoader(() => this.processOptions())
     }
   },
@@ -147,6 +150,8 @@ export default {
       }
 
       this.possibleWords = processedPossibleAnswerWords.slice(0, guessLimit)
+
+      this.track('result-count', this.possibleWords.length)
     },
     includesCharacters: function (charactersToInclude, targetValue) {
       let tempNeededCharacters = charactersToInclude.split('')
@@ -223,6 +228,7 @@ export default {
         .slice(0, 10)
 
       this.goodLetterGuesses = orderedScoredWordList
+      this.track('good-words', orderedScoredWordList.length)
     },
     filterOutWordsWithKnownAndUnknownLetters: function (words) {
       return words.filter((value) => {
@@ -230,6 +236,11 @@ export default {
             this.doNotIncludesCharacters(this.knownLetters.toLowerCase(), value) &&
             this.doNotIncludesCharacters(this.current.toLowerCase(), value)
       })
+    },
+    track: function (type, value) {
+      if (typeof umami != 'undefined') {
+        umami.trackEvent(`${value}`, type)
+      }
     }
   },
   created: function () {
