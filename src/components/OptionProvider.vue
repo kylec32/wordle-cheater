@@ -239,7 +239,7 @@ export default {
     },
     track: function (type, value) {
       if (typeof umami != 'undefined') {
-        umami.trackEvent(`${value}`, type)
+        umami.trackEvent(type, `${value}`)
       }
     }
   },
